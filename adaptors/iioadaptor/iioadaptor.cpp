@@ -80,6 +80,7 @@ void IioAdaptor::setup()
 {
     qDebug() << Q_FUNC_INFO << deviceId;
 
+    // Accelerometer sensor
     if (deviceId.startsWith("accel")) {
         const QString name = "accelerometer";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
@@ -96,6 +97,7 @@ void IioAdaptor::setup()
             iioDevice.sensorType = IioAdaptor::IIO_ACCELEROMETER;
         }
     }
+    // Gyroscope sensor
     else if (deviceId.startsWith("gyro")) {
         const QString name = "gyroscope";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
@@ -112,6 +114,7 @@ void IioAdaptor::setup()
             iioDevice.sensorType = IioAdaptor::IIO_GYROSCOPE;
         }
     }
+    // Magnetometer sensor
     else if (deviceId.startsWith("mag")) {
         const QString name = "magnetometer";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
@@ -128,6 +131,7 @@ void IioAdaptor::setup()
             iioDevice.sensorType = IioAdaptor::IIO_MAGNETOMETER;
         }
     }
+    // ALS sensor
     else if (deviceId.startsWith("als")) {
         const QString name = "als";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
@@ -141,6 +145,29 @@ void IioAdaptor::setup()
             alsBuffer_ = new DeviceAdaptorRingBuffer<TimedUnsigned>(1);
             setAdaptedSensor(name, desc, alsBuffer_);
             iioDevice.sensorType = IioAdaptor::IIO_ALS;
+        }
+    }
+    // Proximity sensor
+    else if (deviceId.startsWith("prox")) {
+        const QString name = "proximity";
+        const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
+        qDebug () << name + ":" << "input_match" << inputMatch;
+        
+        bool ok;
+        proximityThreshold = SensorFrameworkConfig::configuration()->value<QString>(name + "/threshold").toInt(&ok);
+
+        if(!ok) {
+            qDebug() << "Unable to read proximity threshold, using default value of" << DEFAULT_PROXIMITY_THRESHOLD;
+        }
+
+        iioDevice.channelTypeName = "proximity";
+        devNodeNumber = findSensor(inputMatch);
+        if (devNodeNumber!= -1) {
+            QString desc = "Industrial I/O proximity sensor (" + iioDevice.name +")";
+            qDebug() << desc;
+            proximityBuffer_ = new DeviceAdaptorRingBuffer<ProximityData>(1);
+            setAdaptedSensor(name, desc, proximityBuffer_);
+            iioDevice.sensorType = IioAdaptor::IIO_PROXIMITY;
         }
     }
 
@@ -161,6 +188,9 @@ void IioAdaptor::setup()
     if (ok) {
         sensordLogD() << "Overriding scale to" << scale_override;
         iioDevice.scale = scale_override;
+    }
+    else {
+        sensordLogD() << "Failed to overide scale, check your config value";
     }
 
     introduceAvailableDataRange(DataRange(0, 65535, 1));
@@ -435,6 +465,13 @@ void IioAdaptor::processSample(int fileId, int fd)
                 uData = alsBuffer_->nextSlot();
                 uData->value_ = (result + iioDevice.offset) * iioDevice.scale;
                 break;
+            case IioAdaptor::IIO_PROXIMITY:
+                proximityData = proximityBuffer_->nextSlot();
+                proximityData->value_ = (result + iioDevice.offset) * iioDevice.scale;
+                qDebug() << "Proximity value:" << proximityData->value_;
+                proximityData->withinProximity_ = proximityData->value_ > proximityThreshold;
+                qDebug() << "Within proximity:" << proximityData->withinProximity_;
+                break;
             default:
                 break;
             };
@@ -496,6 +533,10 @@ void IioAdaptor::processSample(int fileId, int fd)
                 alsBuffer_->commit();
                 alsBuffer_->wakeUpReaders();
                 break;
+            case IioAdaptor::IIO_PROXIMITY:
+                proximityData->timestamp_ = Utils::getTimeStamp();
+                proximityBuffer_->commit();
+                proximityBuffer_->wakeUpReaders();
             default:
                 break;
             };
