@@ -30,7 +30,7 @@
 
 void IioAdaptorPlugin::Register(class Loader&)
 {
-    sensordLogD() << "registering iioaccelerometeradaptor";
+    sensordLogD() << "registering iiosensorsadaptor";
     SensorManager& sm = SensorManager::instance();
     sm.registerDeviceAdaptor<IioAdaptor>("accelerometeradaptor");
     sm.registerDeviceAdaptor<IioAdaptor>("gyroscopeadaptor");
