@@ -79,10 +79,11 @@ IioAdaptor::~IioAdaptor()
 void IioAdaptor::setup()
 {
     qDebug() << Q_FUNC_INFO << deviceId;
+    QString name = "unknown";
 
     // Accelerometer sensor
     if (deviceId.startsWith("accel")) {
-        const QString name = "accelerometer";
+        name = "accelerometer";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
         qDebug() << name + ":" << "input_match" << inputMatch;
 
@@ -99,7 +100,7 @@ void IioAdaptor::setup()
     }
     // Gyroscope sensor
     else if (deviceId.startsWith("gyro")) {
-        const QString name = "gyroscope";
+        name = "gyroscope";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
         qDebug() << name + ":" << "input_match" << inputMatch;
 
@@ -116,7 +117,7 @@ void IioAdaptor::setup()
     }
     // Magnetometer sensor
     else if (deviceId.startsWith("mag")) {
-        const QString name = "magnetometer";
+        name = "magnetometer";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
         qDebug() << name + ":" << "input_match" << inputMatch;
 
@@ -133,7 +134,7 @@ void IioAdaptor::setup()
     }
     // ALS sensor
     else if (deviceId.startsWith("als")) {
-        const QString name = "als";
+        name = "als";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
         qDebug() << name + ":" << "input_match" << inputMatch;
 
@@ -149,7 +150,7 @@ void IioAdaptor::setup()
     }
     // Proximity sensor
     else if (deviceId.startsWith("prox")) {
-        const QString name = "proximity";
+        name = "proximity";
         const QString inputMatch = SensorFrameworkConfig::configuration()->value<QString>(name + "/input_match");
         qDebug () << name + ":" << "input_match" << inputMatch;
         
@@ -184,7 +185,7 @@ void IioAdaptor::setup()
 
     /* Override the scaling factor if asked */
     bool ok;
-    double scale_override = SensorFrameworkConfig::configuration()->value(iioDevice.name + "/scale").toDouble(&ok);
+    double scale_override = SensorFrameworkConfig::configuration()->value(name + "/scale").toDouble(&ok);
     if (ok) {
         sensordLogD() << "Overriding scale to" << scale_override;
         iioDevice.scale = scale_override;
@@ -260,10 +261,6 @@ int IioAdaptor::findSensor(const QString &sensorName)
                 }
                 iioDevice.channels = j;
                 qDebug() << sensorName + ":" << "Number of channels is" << j;
-
-    // in_rot_from_north_magnetic_tilt_comp_raw ?
-
-                // type
                 break;
             }
         }
