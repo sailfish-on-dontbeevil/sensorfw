@@ -242,6 +242,11 @@ int IioAdaptor::findSensor(const QString &sensorName)
                         continue;
                     qDebug() << sensorName + ":" << "Attribute" << name << value;
 
+                    // Default values
+                    iioDevice.offset = 0.0;
+                    iioDevice.frequency = 0.0;
+                    iioDevice.scale = 1.0;
+
                     QString attributeName(name);
                     if (attributeName.contains(QRegularExpression(iioDevice.channelTypeName + ".*scale$"))) {
                         iioDevice.scale = QString(value).toDouble();
