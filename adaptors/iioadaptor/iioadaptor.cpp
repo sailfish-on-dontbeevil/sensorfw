@@ -474,6 +474,7 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_ALS:
                 uData = alsBuffer_->nextSlot();
                 uData->value_ = (result + iioDevice.offset) * iioDevice.scale;
+                qDebug() << "Light intensity:" << uData->value_;
                 break;
             case IioAdaptor::IIO_PROXIMITY:
                 proximityData = proximityBuffer_->nextSlot();
