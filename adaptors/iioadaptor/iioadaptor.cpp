@@ -193,8 +193,8 @@ void IioAdaptor::setup()
         sensordLogD() << "Failed to overide scale, check your config value";
     }
 
-    introduceAvailableDataRange(DataRange(0, 65535, 1));
-    introduceAvailableInterval(DataRange(0, 586, 0));
+    introduceAvailableDataRange(DataRange(minRange(), maxRange(), resolution()));
+    introduceAvailableInterval(DataRange(minInterval(), maxInterval(), 0));
     setDefaultInterval(10);
 }
 
@@ -235,7 +235,6 @@ int IioAdaptor::findSensor(const QString &sensorName)
                 udev_list_entry_foreach(sysattr, udev_device_get_sysattr_list_entry(dev)) {
                     const char *name;
                     const char *value;
-                    bool ok;
                     name = udev_list_entry_get_name(sysattr);
                     value = udev_device_get_sysattr_value(dev, name);
                     if (value == NULL)
@@ -244,19 +243,13 @@ int IioAdaptor::findSensor(const QString &sensorName)
 
                     QString attributeName(name);
                     if (attributeName.contains(QRegularExpression(iioDevice.channelTypeName + ".*scale$"))) {
-                        iioDevice.scale = QString(value).toDouble(&ok);
-                        if (ok) {
-                         //   scale = num;
-                            qDebug() << sensorName + ":" << "Scale is" << iioDevice.scale;
-                        }
+                        iioDevice.scale = QString(value).toDouble();
+                        qDebug() << sensorName + ":" << "Scale is" << iioDevice.scale;
                     } else if (attributeName.contains(QRegularExpression(iioDevice.channelTypeName + ".*offset$"))) {
-                        iioDevice.offset = QString(value).toDouble(&ok);
-                        if (ok)
+                        iioDevice.offset = QString(value).toDouble();
                         qDebug() << sensorName + ":" << "Offset is" << value;
                     } else if (attributeName.endsWith("frequency")) {
-                        iioDevice.frequency = QString(value).toDouble(&ok);
-                        if (ok)
-                       //     frequency = num;
+                        iioDevice.frequency = QString(value).toDouble();
                         qDebug() << sensorName + ":" << "Frequency is" << iioDevice.frequency;
                     } else if (attributeName.contains(QRegularExpression(iioDevice.channelTypeName + ".*raw$"))) {
                         qDebug() << sensorName + ":" << "Adding to paths:" << iioDevice.devicePath
@@ -429,6 +422,26 @@ int IioAdaptor::deviceChannelParseBytes(QString filename)
     return 0;
 }
 
+unsigned int IioAdaptor::minRange() {
+    return 0;
+}
+
+unsigned int IioAdaptor::maxRange() {
+    return 1000;
+}
+
+unsigned int IioAdaptor::resolution() {
+    return 1;
+}
+
+unsigned int IioAdaptor::minInterval() {
+    return 0;
+}
+
+unsigned int IioAdaptor::maxInterval() {
+    return 586;
+}
+
 void IioAdaptor::processSample(int fileId, int fd)
 {
     char buf[IIO_BUFFER_LEN];
@@ -467,10 +480,8 @@ void IioAdaptor::processSample(int fileId, int fd)
                 break;
             case IioAdaptor::IIO_PROXIMITY:
                 proximityData = proximityBuffer_->nextSlot();
-                proximityData->value_ = (result + iioDevice.offset) * iioDevice.scale;
-                qDebug() << "Proximity value:" << proximityData->value_;
-                proximityData->withinProximity_ = proximityData->value_ > proximityThreshold;
-                qDebug() << "Within proximity:" << proximityData->withinProximity_;
+                proximityData->withinProximity_ = ((result + iioDevice.offset) * iioDevice.scale) >= proximityThreshold;
+                proximityData->value_ = proximityData->withinProximity_? 0: maxRange();
                 break;
             default:
                 break;
@@ -537,6 +548,7 @@ void IioAdaptor::processSample(int fileId, int fd)
                 proximityData->timestamp_ = Utils::getTimeStamp();
                 proximityBuffer_->commit();
                 proximityBuffer_->wakeUpReaders();
+                break;
             default:
                 break;
             };

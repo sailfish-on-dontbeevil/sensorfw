@@ -130,11 +130,17 @@ private:
     int scanElementsEnable(int device, int enable);
     int deviceChannelParseBytes(QString filename);
 
+    unsigned int minRange();
+    unsigned int maxRange();
+    unsigned int resolution();
+    unsigned int minInterval();
+    unsigned int maxInterval();
+
     // Device number for the sensor (-1 if not found)
     int devNodeNumber;
 
     // Threshold to determine 'within proximity'
-    int proximityThreshold;
+    unsigned int proximityThreshold;
 
     DeviceAdaptorRingBuffer<TimedXyzData>* iioXyzBuffer_;
     DeviceAdaptorRingBuffer<TimedUnsigned>* alsBuffer_;
