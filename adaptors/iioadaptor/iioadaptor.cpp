@@ -455,19 +455,21 @@ void IioAdaptor::processSample(int fileId, int fd)
     if (device == 0) {
         readBytes = read(fd, buf, sizeof(buf));
 
+        if(iioDevice.sensorType == IioAdaptor::IIO_ALS) {
+            qDebug() << "Light sensor channel:" << channel;
+        }
+
         if (readBytes <= 0) {
             sensordLogW() << "read():" << strerror(errno);
             return;
         }
         result = strtol(buf, NULL, 10);
+        qDebug() << "Result value:" << result;
 
         if (result == 0)
             return;
 
         switch(channel) {
-            if(iioDevice.sensorType == IioAdaptor::IIO_ALS) {
-                qDebug() << "Light sensor channel:" << channel;
-            }
         case 0: {
             switch (iioDevice.sensorType) {
             case IioAdaptor::IIO_ACCELEROMETER:
