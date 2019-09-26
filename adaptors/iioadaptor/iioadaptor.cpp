@@ -429,7 +429,7 @@ unsigned int IioAdaptor::minRange() {
 }
 
 unsigned int IioAdaptor::maxRange() {
-    return 1000;
+    return 65535;
 }
 
 unsigned int IioAdaptor::resolution() {
@@ -465,6 +465,9 @@ void IioAdaptor::processSample(int fileId, int fd)
             return;
 
         switch(channel) {
+            if(iioDevice.sensorType == IioAdaptor::IIO_ALS) {
+                qDebug() << "Light sensor channel:" << channel;
+            }
         case 0: {
             switch (iioDevice.sensorType) {
             case IioAdaptor::IIO_ACCELEROMETER:
@@ -479,10 +482,6 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_ALS:
                 uData = alsBuffer_->nextSlot();
                 uData->value_ = (result + iioDevice.offset) * iioDevice.scale;
-                qDebug() << "Light result:" << result;
-                qDebug() << "Light offset:" << iioDevice.offset;
-                qDebug() << "Light scale:" << iioDevice.scale;
-                qDebug() << "Light intensity:" << uData->value_;
                 break;
             case IioAdaptor::IIO_PROXIMITY:
                 proximityData = proximityBuffer_->nextSlot();
