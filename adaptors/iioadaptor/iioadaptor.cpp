@@ -465,7 +465,6 @@ void IioAdaptor::processSample(int fileId, int fd)
             return;
         }
         result = strtol(buf, NULL, 10);
-        qDebug() << "Result value:" << result;
 
         if (result == 0)
             return;
@@ -478,6 +477,10 @@ void IioAdaptor::processSample(int fileId, int fd)
                 timedData = iioXyzBuffer_->nextSlot();
                 //value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
                 value = -(result + iioDevice.offset) * iioDevice.scale;
+                qDebug() << "[bmc150] result accel X:" << result;
+                qDebug() << "[bmc150] offset accel X:" << iioDevice.offset;
+                qDebug() << "[bmc150] scale accel X:" << iioDevice.scale;
+                qDebug() << "[bmc150] Value accel X:" << value;
                 if(value < minRange()) {
                     timedData->x_= minRange();
                 }
@@ -515,6 +518,8 @@ void IioAdaptor::processSample(int fileId, int fd)
                 //timedData->y_= -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
                 //value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
                 value = -(result + iioDevice.offset) * iioDevice.scale;
+                qDebug() << "[bmc150] result accel Y:" << result;
+                qDebug() << "[bmc150] Value accel Y:" << value;
                 if(value < minRange()) {
                     timedData->y_= minRange();
                 }
@@ -544,6 +549,8 @@ void IioAdaptor::processSample(int fileId, int fd)
                 //timedData->z_ = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
                 //value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
                 value = -(result + iioDevice.offset) * iioDevice.scale;
+                qDebug() << "[bmc150] result accel Z:" << result;
+                qDebug() << "[bmc150] Value accel Z:" << value;
                 if(value < minRange()) {
                     timedData->z_= minRange();
                 }
