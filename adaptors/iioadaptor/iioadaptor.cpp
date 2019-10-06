@@ -425,11 +425,11 @@ int IioAdaptor::deviceChannelParseBytes(QString filename)
 }
 
 unsigned int IioAdaptor::minRange() {
-    return 0;
+    return -32768;
 }
 
 unsigned int IioAdaptor::maxRange() {
-    return 65535;
+    return 32767;
 }
 
 unsigned int IioAdaptor::resolution() {
@@ -451,6 +451,7 @@ void IioAdaptor::processSample(int fileId, int fd)
     qreal result = 0;
     int channel = fileId%IIO_MAX_DEVICE_CHANNELS;
     int device = (fileId - channel)/IIO_MAX_DEVICE_CHANNELS;
+    int value = 0;
 
     if (device == 0) {
         readBytes = read(fd, buf, sizeof(buf));
@@ -475,7 +476,16 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_ACCELEROMETER:
             case IioAdaptor::IIO_GYROSCOPE:
                 timedData = iioXyzBuffer_->nextSlot();
-                timedData->x_= -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                if(value < minRange()) {
+                    timedData->x_= minRange();
+                }
+                else if (value > maxRange()) {
+                    timedData->x_ = maxRange();
+                }
+                else {
+                    timedData->x_ = value;
+                }
                 break;
             case IioAdaptor::IIO_MAGNETOMETER:
                 calData = magnetometerBuffer_->nextSlot();
@@ -501,7 +511,17 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_ACCELEROMETER:
             case IioAdaptor::IIO_GYROSCOPE:
                 timedData = iioXyzBuffer_->nextSlot();
-                timedData->y_= -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                //timedData->y_= -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                if(value < minRange()) {
+                    timedData->y_= minRange();
+                }
+                else if (value > maxRange()) {
+                    timedData->y_ = maxRange();
+                }
+                else {
+                    timedData->y_ = value;
+                }
                 break;
             case IioAdaptor::IIO_MAGNETOMETER:
                 calData = magnetometerBuffer_->nextSlot();
@@ -519,7 +539,17 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_ACCELEROMETER:
             case IioAdaptor::IIO_GYROSCOPE:
                 timedData = iioXyzBuffer_->nextSlot();
-                timedData->z_ = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                //timedData->z_ = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                if(value < minRange()) {
+                    timedData->z_= minRange();
+                }
+                else if (value > maxRange()) {
+                    timedData->z_ = maxRange();
+                }
+                else {
+                    timedData->z_ = value;
+                }
                 break;
             case IioAdaptor::IIO_MAGNETOMETER:
                 calData = magnetometerBuffer_->nextSlot();
