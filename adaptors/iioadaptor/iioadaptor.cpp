@@ -476,7 +476,8 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_ACCELEROMETER:
             case IioAdaptor::IIO_GYROSCOPE:
                 timedData = iioXyzBuffer_->nextSlot();
-                value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                //value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                value = -(result + iioDevice.offset) * iioDevice.scale;
                 if(value < minRange()) {
                     timedData->x_= minRange();
                 }
@@ -512,7 +513,8 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_GYROSCOPE:
                 timedData = iioXyzBuffer_->nextSlot();
                 //timedData->y_= -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
-                value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                //value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                value = -(result + iioDevice.offset) * iioDevice.scale;
                 if(value < minRange()) {
                     timedData->y_= minRange();
                 }
@@ -540,7 +542,8 @@ void IioAdaptor::processSample(int fileId, int fd)
             case IioAdaptor::IIO_GYROSCOPE:
                 timedData = iioXyzBuffer_->nextSlot();
                 //timedData->z_ = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
-                value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                //value = -(result + iioDevice.offset) * iioDevice.scale * 1000 * REV_GRAVITY;
+                value = -(result + iioDevice.offset) * iioDevice.scale;
                 if(value < minRange()) {
                     timedData->z_= minRange();
                 }
